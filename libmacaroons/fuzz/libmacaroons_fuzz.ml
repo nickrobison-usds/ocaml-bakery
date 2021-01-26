@@ -5,7 +5,7 @@ let max_len = bytes_fixed 10
 let non_zero =
   map [bytes] (fun s ->
       match (String.length s) with
-      | 0 -> (bad_test ())
+      | 0 | 1 -> (bad_test ())
       | _ -> s)
 
 let b64 =
