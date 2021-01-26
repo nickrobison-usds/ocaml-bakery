@@ -1,0 +1,26 @@
+name: Fuzz
+
+on:
+  workflow_dispatch: # because sometimes you just want to force a branch to have tests run
+  push:
+    branches:
+      - "**"
+    paths:
+      - .github/workflows/fuzz.yml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Use OCaml 4.08.1-afl
+        uses: avsm/setup-ocaml@v1
+        with:
+          ocaml-version: 4.08.1+afl
+      - run: opam pin add libmacaroons.dev . --no-action
+      - run: opam depext libmacaroons 
+      - run: opam install . --deps-only
+      - run: opam install . -y bun crowbar base64
+      - run: opam exec -- dune build
+      - run: opam exec -- dune run libmacaroons/fuzz/libmacaroons_fuzz.ml
