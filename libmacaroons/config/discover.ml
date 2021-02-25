@@ -44,12 +44,20 @@ let define_constants c =
   | false, false, false -> raise (Invalid_argument "Cannot find libutil implementation") in
   C.C_define.gen_header_file c ~fname:"config.h" configs
 
+let arch_flags c =
+  let arch = C.ocaml_config_var_exn c "architecture" in
+  let flags = match arch with
+  | "arm64" -> []
+  | _ -> ["-msse4.1"]
+  in
+  String.concat " " flags
+
 
 let ocamlopt_lines c =
   let cflags =
     try C.ocaml_config_var_exn c "ocamlopt_cflags"
     with _ -> "-O3 -fno-strict-aliasing -fwrapv" in
-  let cflags = cflags ^ " -msse4.1" in
+  let cflags = cflags ^ (arch_flags c) in
   C.Flags.extract_blank_separated_words cflags
 
 let link_flags c =
